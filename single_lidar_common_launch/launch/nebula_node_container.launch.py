@@ -86,8 +86,16 @@ def launch_setup(context, *args, **kwargs):
     ), "Sensor calib file under calibration/ was not found: {}".format(sensor_calib_fp)
 
     # Pointcloud preprocessor parameters
+    filter_param = ParameterFile(
+        param_file=LaunchConfiguration("filter_param_path").perform(context),
+        allow_substs=True,
+    )
     distortion_corrector_node_param = ParameterFile(
         param_file=LaunchConfiguration("distortion_correction_node_param_path").perform(context),
+        allow_substs=True,
+    )
+    ring_outlier_filter_node_param = ParameterFile(
+        param_file=LaunchConfiguration("ring_outlier_filter_node_param_path").perform(context),
         allow_substs=True,
     )
 
@@ -159,7 +167,7 @@ def launch_setup(context, *args, **kwargs):
                 ("input", "pointcloud_raw_ex"),
                 ("output", "self_cropped/pointcloud_ex"),
             ],
-            parameters=[cropbox_parameters],
+            parameters=[filter_param, cropbox_parameters],
             extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
         )
     )
@@ -181,7 +189,7 @@ def launch_setup(context, *args, **kwargs):
                 ("input", "self_cropped/pointcloud_ex"),
                 ("output", "mirror_cropped/pointcloud_ex"),
             ],
-            parameters=[cropbox_parameters],
+            parameters=[filter_param, cropbox_parameters],
             extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
         )
     )
@@ -204,21 +212,19 @@ def launch_setup(context, *args, **kwargs):
 
     # Ring Outlier Filter is the last component in the pipeline, so control the output frame here
     if LaunchConfiguration("output_as_sensor_frame").perform(context).lower() == "true":
-        ring_outlier_filter_parameters = {"output_frame": LaunchConfiguration("frame_id")}
+        ring_outlier_output_frame = {"output_frame": LaunchConfiguration("frame_id")}
     else:
-        ring_outlier_filter_parameters = {
-            "output_frame": ""
-        }  # keep the output frame as the input frame
+        ring_outlier_output_frame = {"output_frame": ""}  # keep the output frame as the input frame
     nodes.append(
         ComposableNode(
-            package="pointcloud_preprocessor",
-            plugin="pointcloud_preprocessor::RingOutlierFilterComponent",
+            package="autoware_pointcloud_preprocessor",
+            plugin="autoware::pointcloud_preprocessor::RingOutlierFilterComponent",
             name="ring_outlier_filter",
             remappings=[
                 ("input", "rectified/pointcloud_ex"),
                 ("output", "pointcloud_before_sync"),
             ],
-            parameters=[ring_outlier_filter_parameters],
+            parameters=[filter_param, ring_outlier_filter_node_param, ring_outlier_output_frame],
             extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
         )
     )
@@ -275,6 +281,15 @@ def generate_launch_description():
         "vehicle_mirror_param_file", description="path to the file of vehicle mirror position yaml"
     )
     add_launch_arg(
+        "filter_param_path",
+        os.path.join(
+            common_sensor_share_dir,
+            "config",
+            "filter.param.yaml",
+        ),
+        description="path to parameter file of filter",
+    )
+    add_launch_arg(
         "distortion_correction_node_param_path",
         os.path.join(
             common_sensor_share_dir,
@@ -282,6 +297,15 @@ def generate_launch_description():
             "distortion_corrector_node.param.yaml",
         ),
         description="path to parameter file of distortion correction node",
+    )
+    add_launch_arg(
+        "ring_outlier_filter_node_param_path",
+        os.path.join(
+            common_sensor_share_dir,
+            "config",
+            "ring_outlier_filter_node.param.yaml",
+        ),
+        description="path to parameter file of ring outlier filter node",
     )
 
     set_container_executable = SetLaunchConfiguration(
