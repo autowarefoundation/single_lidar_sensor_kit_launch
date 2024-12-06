@@ -11,6 +11,7 @@
 
   <exec_depend>single_lidar_common_launch</exec_depend>
   <exec_depend>autoware_gnss_poser</exec_depend>
+  <exec_depend>autoware_vehicle_velocity_converter</exec_depend>
   <exec_depend>tamagawa_imu_driver</exec_depend>
   <exec_depend>topic_tools</exec_depend>
   <exec_depend>ublox_gps</exec_depend>
