@@ -2,8 +2,8 @@
 Changelog for package single_lidar_common_launch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.41.0 (2025-02-12)
+-------------------
 * Merge remote-tracking branch 'origin/main' into humble
 * feat: rename velodyne_monitor with autoware_velodyne_monitor (`#7 <https://github.com/autowarefoundation/single_lidar_sensor_kit_launch/issues/7>`_)
 * refactor(glog_component): prefix package and namespace with autoware (`#4 <https://github.com/autowarefoundation/single_lidar_sensor_kit_launch/issues/4>`_)
