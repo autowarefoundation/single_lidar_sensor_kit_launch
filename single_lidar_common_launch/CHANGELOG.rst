@@ -2,6 +2,9 @@
 Changelog for package single_lidar_common_launch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.42.0 (2025-03-28)
+-------------------
+
 0.41.0 (2025-02-12)
 -------------------
 * Merge remote-tracking branch 'origin/main' into humble
